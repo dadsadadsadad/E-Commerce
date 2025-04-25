@@ -1,30 +1,32 @@
-import React, {useEffect, useState} from 'react'
+import React, {useContext, useEffect, useState} from 'react'
 import {assets} from '../assets/assets'
 import { Link, NavLink } from 'react-router-dom'
 import { auth } from '../../firebase'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
+import {ShopContext} from "../context/ShopContext.jsx"
 
 const Navbar = () => {
 
-  const[visible,setVisible] = useState(false);
-  const [user, setUser] = useState(null);
+    const {setShowSearch} = useContext(ShopContext)
+    const[visible,setVisible] = useState(false)
+    const [user, setUser] = useState(null)
 
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            console.log("User signed out.");
+            console.log("User signed out.")
         } catch (error) {
-            console.error("Sign out error:", error);
+            console.error("Sign out error:", error)
         }
-    };
+    }
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-        });
+            setUser(currentUser)
+        })
 
-        return () => unsubscribe();
-    }, []);
+        return () => unsubscribe()
+    }, [])
 
   return (
     <div className='flex items-center justify-between py-5 font-medium'>
@@ -53,7 +55,7 @@ const Navbar = () => {
        </ul>
 
         <div className='flex items-center gap-6'>
-            <img src={assets.search_icon} className='w-5 cursor-pointer' alt=""/>
+            <img onClick={()  => {setShowSearch(true)}} src={assets.search_icon} className='w-5 cursor-pointer' alt=""/>
             <p>{user?.displayName || "Guest"}</p>
             <div className='group relative'>
                 <img className='w-5 cursor-pointer' src={assets.profile_icon} alt=""/>
