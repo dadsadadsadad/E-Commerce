@@ -1,8 +1,24 @@
-import React, { useState } from 'react'
+import React, {useEffect, useState} from 'react'
 import { db } from '../../firebase.js'
 import { collection, addDoc } from 'firebase/firestore'
+import {getAuth, onAuthStateChanged} from 'firebase/auth'
+import {useNavigate} from "react-router-dom";
 
 export default function AddProduct() {
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const auth = getAuth()
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                navigate("/no-access")
+            }
+        })
+
+        return () => unsubscribe()
+    }, [navigate])
+
     const [form, setForm] = useState({
         name: '',
         description: '',
@@ -10,7 +26,7 @@ export default function AddProduct() {
         category: '',
         gender: '',
         color: '',
-    });
+    })
     const [imageFile, setImageFile] = useState(null)
     const [loading, setLoading] = useState(false)
     const [selectedSizes, setSelectedSizes] = useState([])
@@ -54,12 +70,23 @@ export default function AddProduct() {
 
         const json = await res.json()
         return json.secure_url
-    };
+    }
 
     const handleSubmit = async e => {
         e.preventDefault()
         if (!imageFile) return alert("Please upload an image")
         setLoading(true)
+
+        const auth = getAuth()
+        const user = auth.currentUser
+
+        if (!user) {
+            alert("No user logged in!")
+            setLoading(false)
+            return
+        }
+
+        const userId = user.uid
 
         try {
             const imageUrl = await uploadImageToCloudinary(imageFile)
@@ -70,6 +97,7 @@ export default function AddProduct() {
                 size: selectedSizes,
                 stockBySize,
                 image: imageUrl,
+                userId,
                 createdAt: new Date().toISOString(),
             }
 
@@ -93,17 +121,14 @@ export default function AddProduct() {
             alert("Error uploading product")
         }
         setLoading(false)
-    };
+    }
 
     return (
         <div className='max-w-2xl mx-auto p-4'>
             <h2 className='text-xl font-semibold mb-4'>Add Product</h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
-
                 <input type='text' name='name' value={form.name} onChange={handleChange} placeholder='Product Name' className='w-full border rounded px-3 py-2' required autoComplete="off" />
-
                 <textarea name='description' value={form.description} onChange={handleChange} placeholder='Product Description' className='w-full border rounded px-3 py-2' rows='3' required autoComplete="off" />
-
                 <input type='number' name='price' value={form.price} onChange={handleChange} placeholder='Price' className='w-full border rounded px-3 py-2' required autoComplete="off" />
 
                 <select name='category' value={form.category} onChange={handleChange} className='w-full border rounded px-3 py-2' required autoComplete="off">
@@ -163,5 +188,5 @@ export default function AddProduct() {
                 </button>
             </form>
         </div>
-    );
+    )
 }

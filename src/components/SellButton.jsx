@@ -18,7 +18,7 @@ const FloatingAddButton = () => {
 
     const handleClick = () => {
         if (user) {
-            navigate('/addproduct')
+            navigate('/add-product')
         } else {
             console.log('Not logged in')
         }

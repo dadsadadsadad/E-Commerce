@@ -15,6 +15,8 @@ import SellButton from './components/SellButton'
 import AddProduct from "./pages/AddProduct.jsx";
 import Search from "./pages/Search.jsx";
 import SearchBar from "./components/SearchBar.jsx";
+import AccountPage from "./pages/AccountPage.jsx";
+import NoAccess from "./pages/NoAccess.jsx";
 
 
 const App = () => {
@@ -34,6 +36,8 @@ const App = () => {
                 <Route path='/orders' element={<Orders/>} />
                 <Route path='/add-product' element={<AddProduct/>} />
                 <Route path='search' element={<Search/>} />
+                <Route path='accountpage' element={<AccountPage/>} />
+                <Route path='no-access' element={<NoAccess/>} />
             </Routes>
             <Footer/>
             <SellButton/>
