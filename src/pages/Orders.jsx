@@ -6,6 +6,7 @@ import { db } from '../../firebase.js'
 import { ShopContext } from '../context/ShopContext.jsx'
 import Title from '../components/Title.jsx'
 import ProductItem from '../components/ProductItem.jsx'
+import {products} from "../assets/assets.js";
 
 const Orders = () => {
   const navigate = useNavigate()
@@ -22,11 +23,31 @@ const Orders = () => {
       try {
         const ordersCol = collection(db, 'users', user.uid, 'orders')
         const snapshot = await getDocs(ordersCol)
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        const itemsCol = collection(db, 'products')
+        const itemsSnapshot = await getDocs(itemsCol)
+
+        const productsMap = {}
+        itemsSnapshot.docs.forEach(doc => {
+          productsMap[doc.id] = doc.data()
+        })
+
+        const data = snapshot.docs.map(doc => {
+          const orderData = doc.data()
+          const product = productsMap[orderData.productId] || {}
+          const image = Array.isArray(product.image) ? product.image[0] : product.image
+
+          return {
+            id: doc.id,
+            ...orderData,
+            image
+          }
+        })
+
         setOrders(data)
-      } catch (err) {
-        console.error('Error fetching orders:', err)
-      } finally {
+      } catch (error) {
+        console.error('Error fetching orders with product images:', error)
+      }
+      finally {
         setLoading(false)
       }
     })

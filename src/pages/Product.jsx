@@ -21,6 +21,7 @@ export default function ProductDetail() {
         const document = await getDoc(productRef)
         if (document.exists()) {
           setProductData({ id: document.id, ...document.data() })
+          console.log(document.data())
         } else {
           console.log('Product not found')
         }
@@ -79,10 +80,9 @@ export default function ProductDetail() {
         productId: productData.id,
         name: productData.name,
         price: productData.price,
-        size,
+        size: productData.size,
         quantity
       })
-      setAddedToCart(true)
       console.log('Product ordered')
     } catch (error) {
       console.error('Error ordering product: ', error)
@@ -92,12 +92,6 @@ export default function ProductDetail() {
 
   if (loading) return <p>Loading product details...</p>
   if (!productData) return <p>Product not found</p>
-
-  // Default sizes if none in product
-  const defaultSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-  const sizes = Array.isArray(productData.sizes) && productData.sizes.length > 0
-      ? productData.sizes
-      : defaultSizes
 
   return (
       <div className="border-t-2 p-10 transition-opacity ease-in duration-500 opacity-100">
@@ -127,7 +121,7 @@ export default function ProductDetail() {
             <div className="mb-6">
               <p className="mb-2 font-medium">Select Size:</p>
               <div className="flex gap-2 flex-wrap">
-                {sizes.map((s, idx) => (
+                {productData.size.map((s, idx) => (
                     <button
                         key={idx}
                         type="button"

@@ -20,7 +20,7 @@ const FloatingAddButton = () => {
         if (user) {
             navigate('/add-product')
         } else {
-            console.log('Not logged in')
+            navigate('/login')
         }
     }
 

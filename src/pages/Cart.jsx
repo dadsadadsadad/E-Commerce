@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from "react-router-dom"
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../firebase'
 import Title from '../components/Title'
 import { assets } from '../assets/assets'
@@ -8,35 +9,32 @@ import { assets } from '../assets/assets'
 const Cart = () => {
     const [cartItems, setCartItems] = useState([])
     const [loading, setLoading] = useState(true)
+    const navigate = useNavigate()
 
     useEffect(() => {
         const auth = getAuth()
         const unsubscribe = onAuthStateChanged(auth, async user => {
             if (!user) {
+                navigate('/login')
                 setCartItems([])
                 setLoading(false)
                 return
             }
             try {
-                const cartCol = collection(db, 'users', user.uid, 'cart')
-                const snapshot = await getDocs(cartCol)
-                const detailed = await Promise.all(
-                    snapshot.docs.map(async docSnap => {
-                        const d = docSnap.data()
-                        const prodRef = doc(db, 'products', d.productId)
-                        const prodSnap = await getDoc(prodRef)
-                        const prod = prodSnap.exists() ? prodSnap.data() : {}
-                        return {
-                            id: docSnap.id,
-                            productId: d.productId,
-                            size: d.size,
-                            quantity: d.quantity,
-                            name: prod.name,
-                            price: prod.price,
-                            image: Array.isArray(prod.image) ? prod.image[0] : prod.image
-                        }
-                    })
-                )
+                const cartRef = collection(db, 'users', user.uid, 'cart')
+                const snapshot = await getDocs(cartRef)
+                const detailed = snapshot.docs.map(docSnap => {
+                    const d = docSnap.data()
+                    return {
+                        id: docSnap.id,
+                        productId: d.productId,
+                        size: d.size,
+                        quantity: d.quantity,
+                        name: d.name,
+                        price: d.price,
+                        image: d.image
+                    }
+                })
                 setCartItems(detailed)
             } catch (err) {
                 console.error('Error fetching cart items', err)
@@ -54,7 +52,8 @@ const Cart = () => {
         const item = cartItems[index]
         const auth = getAuth()
         const user = auth.currentUser
-        if (!user) return
+        if (!user)
+            return
         const cartDocRef = doc(db, 'users', user.uid, 'cart', item.id)
         try {
             await updateDoc(cartDocRef, { quantity: newQty })
@@ -70,7 +69,8 @@ const Cart = () => {
         const item = cartItems[index]
         const auth = getAuth()
         const user = auth.currentUser
-        if (!user) return
+        if (!user)
+            return
         const cartDocRef = doc(db, 'users', user.uid, 'cart', item.id)
         try {
             await deleteDoc(cartDocRef)
